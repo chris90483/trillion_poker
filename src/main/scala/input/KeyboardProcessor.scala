@@ -9,11 +9,12 @@ import org.jnativehook.NativeHookException
 import org.jnativehook.keyboard.NativeKeyEvent
 import org.jnativehook.keyboard.NativeKeyListener
 
-import game.PokerGame
-import game.GameState._
+import game.Application
+import game.ApplicationState._
 
-class KeyboardListener(gameArg: PokerGame) extends NativeKeyListener {
-  val game: PokerGame = gameArg
+class KeyboardProcessor(gameArg: Application) extends NativeKeyListener {
+  val application: Application = gameArg
+  val debug: Boolean = false
 
   try {
     LogManager.getLogManager.reset()
@@ -29,6 +30,7 @@ class KeyboardListener(gameArg: PokerGame) extends NativeKeyListener {
 
   def nativeKeyPressed(e: NativeKeyEvent) {
     val key = NativeKeyEvent.getKeyText(e.getKeyCode)
+    if (debug) println(key)
     handleInput(key)
   }
 
@@ -41,7 +43,8 @@ class KeyboardListener(gameArg: PokerGame) extends NativeKeyListener {
   GlobalScreen.addNativeKeyListener(this)
 
   def handleInput(key: String) {
-    game.state match {
+    if (debug) println("current game.state: %s".format(application.applicationState))
+    application.applicationState match {
       case MainMenu => handleInputMainMenu(key)
       case StartMenu => handleInputStartMenu(key)
       case JoinMenu => handleInputJoinMenu(key)
@@ -51,23 +54,25 @@ class KeyboardListener(gameArg: PokerGame) extends NativeKeyListener {
 
   def handleInputMainMenu(key: String): Unit = {
     key match {
-      case "q" => stop(); System.exit(0);
-      case "1" => game.state = StartMenu; game.gameUI.showStartGameMenu()
-      case "2" => game.state = JoinMenu; game.gameUI.showJoinGameMenu()
+      case "Q" => stop(); System.exit(0);
+      case "1" => application.applicationState = StartMenu; application.gameUI.showStartGameMenu()
+      case "2" => application.applicationState = JoinMenu; application.gameUI.showJoinGameMenu()
       case _ => ()
     }
   }
 
   def handleInputStartMenu(key: String): Unit = {
     key match {
-      case "q" => game.state = MainMenu; game.gameUI.showMainMenu()
+      case "1" => application.applicationState = InGame; application.startOfflineGame();
+      case "2" => println("[KeyboardProcessor] dat heb ik nog niet geschreven, jammer joh")
+      case "Q" => application.applicationState = MainMenu; application.gameUI.showMainMenu()
       case _ => ()
     }
   }
 
   def handleInputJoinMenu(key: String): Unit = {
     key match {
-      case "q" => game.state = MainMenu; game.gameUI.showMainMenu()
+      case "Q" => application.applicationState = MainMenu; application.gameUI.showMainMenu()
       case _ => ()
     }
   }
